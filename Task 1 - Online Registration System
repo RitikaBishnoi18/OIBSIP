@@ -1,0 +1,243 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
+
+public class ReservationSystemGUI extends JFrame {
+    private Map<String, String> userCredentials = new HashMap<>();
+    private Map<String, ReservationDetails> reservations = new HashMap<>();
+    private Map<String, String> trainNameMap = new HashMap<>();
+    private int prNumberCounter = 1;
+
+    private JTextField usernameField;
+    private JTextArea reservationDetailsTextArea;
+    private JTextField trainNumberField;
+    private JTextField trainNameField;
+    private JTextField classTypeField;
+    private JTextField dateOfJourneyField;
+    private JTextField destinationField;
+
+    public ReservationSystemGUI() {
+        super("Online Reservation System");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // Initializing user credentials 
+        userCredentials.put("Ritika", "pass");
+
+        // Initializing train name mapping 
+        trainNameMap.put("101", "Express Train 101");
+        trainNameMap.put("102", "Superfast Train 102");
+        trainNameMap.put("103", "Local Train 103");
+
+        // Login Frame
+        JFrame loginFrame = new JFrame("Login");
+        loginFrame.setSize(300, 150);
+        loginFrame.setLayout(new FlowLayout());
+
+        usernameField = new JTextField(20);
+        JPasswordField passwordField = new JPasswordField(20);
+        JButton loginButton = new JButton("Login");
+
+        loginButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String enteredUsername = usernameField.getText();
+                char[] enteredPassword = passwordField.getPassword();
+                String password = new String(enteredPassword);
+
+                if (userCredentials.containsKey(enteredUsername) && userCredentials.get(enteredUsername).equals(password)) {
+                    JOptionPane.showMessageDialog(loginFrame, "Login successful!");
+                    openReservationFrame();
+                    loginFrame.setVisible(false);
+                } else {
+                    JOptionPane.showMessageDialog(loginFrame, "Invalid username or password. Login failed.");
+                }
+
+                // Clearing fields after login attempt
+                usernameField.setText("");
+                passwordField.setText("");
+            }
+        });
+
+        loginFrame.add(new JLabel("Username:"));
+        loginFrame.add(usernameField);
+        loginFrame.add(new JLabel("Password:"));
+        loginFrame.add(passwordField);
+        loginFrame.add(loginButton);
+
+        // Making the login frame visible
+        loginFrame.setLocationRelativeTo(null);
+        loginFrame.setVisible(true);
+    }
+
+    private void openReservationFrame() {
+        // Open Reservation Frame
+        JFrame reservationFrame = new JFrame("Reservation");
+        reservationFrame.setSize(400, 300);
+        reservationFrame.setLayout(new GridLayout(8, 2));
+
+        trainNumberField = new JTextField(20);
+        trainNameField = new JTextField(20);
+        classTypeField = new JTextField(20);
+        dateOfJourneyField = new JTextField(20);
+        destinationField = new JTextField(20);
+        JButton reserveButton = new JButton("Reserve");
+        reservationDetailsTextArea = new JTextArea(5, 20);
+        reservationDetailsTextArea.setEditable(false);
+
+        JButton cancelButton = new JButton("Cancel Reservation");
+
+        reserveButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String trainNumber = trainNumberField.getText();
+                String trainName = trainNameField.getText();
+                String classType = classTypeField.getText();
+                String dateOfJourney = dateOfJourneyField.getText();
+                String destination = destinationField.getText();
+
+                ReservationDetails reservationDetails = new ReservationDetails(trainNumber, trainName, classType, dateOfJourney, destination);
+                reservations.put("PR" + prNumberCounter, reservationDetails);
+
+                // Displaying reservation details
+                displayReservationDetails();
+
+                prNumberCounter++;
+
+                JOptionPane.showMessageDialog(reservationFrame, "Reservation successful!");
+
+                // Clearing fields after reservation
+                trainNumberField.setText("");
+                trainNameField.setText("");
+                classTypeField.setText("");
+                dateOfJourneyField.setText("");
+                destinationField.setText("");
+            }
+        });
+
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openCancellationForm();
+            }
+        });
+
+        trainNumberField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String enteredTrainNumber = trainNumberField.getText();
+                if (trainNameMap.containsKey(enteredTrainNumber)) {
+                    trainNameField.setText(trainNameMap.get(enteredTrainNumber));
+                } else {
+                    JOptionPane.showMessageDialog(reservationFrame, "Train number not found in the map.");
+                }
+            }
+        });
+
+        reservationFrame.add(new JLabel("Train Number:"));
+        reservationFrame.add(trainNumberField);
+        reservationFrame.add(new JLabel("Train Name:"));
+        reservationFrame.add(trainNameField);
+        reservationFrame.add(new JLabel("Class Type:"));
+        reservationFrame.add(classTypeField);
+        reservationFrame.add(new JLabel("Date of Journey:"));
+        reservationFrame.add(dateOfJourneyField);
+        reservationFrame.add(new JLabel("Destination:"));
+        reservationFrame.add(destinationField);
+        reservationFrame.add(new JLabel("")); 
+        reservationFrame.add(reserveButton);
+        reservationFrame.add(new JLabel("Reservation Details:"));
+        reservationFrame.add(reservationDetailsTextArea);
+        reservationFrame.add(new JLabel("")); 
+        reservationFrame.add(cancelButton);
+
+        // Making the reservation frame visible
+        reservationFrame.setLocationRelativeTo(null);
+        reservationFrame.setVisible(true);
+    }
+
+    private void displayReservationDetails() {
+        StringBuilder details = new StringBuilder();
+        for (Map.Entry<String, ReservationDetails> entry : reservations.entrySet()) {
+            details.append(entry.getKey()).append(": ").append(entry.getValue().toString()).append("\n");
+        }
+        reservationDetailsTextArea.setText(details.toString());
+    }
+
+    private void openCancellationForm() {
+        // Open Cancellation Frame
+        JFrame cancellationFrame = new JFrame("Cancellation");
+        cancellationFrame.setSize(300, 150);
+        cancellationFrame.setLayout(new FlowLayout());
+
+        JTextField prNumberField = new JTextField(20);
+        JButton cancelButton = new JButton("Cancel Reservation");
+
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String cancelPRNumber = prNumberField.getText();
+
+                if (reservations.containsKey(cancelPRNumber)) {
+                    int option = JOptionPane.showConfirmDialog(cancellationFrame, reservations.get(cancelPRNumber), "Confirm Cancellation", JOptionPane.OK_CANCEL_OPTION);
+                    if (option == JOptionPane.OK_OPTION) {
+                        reservations.remove(cancelPRNumber);
+                        JOptionPane.showMessageDialog(cancellationFrame, "Cancellation successful!");
+                        // Update reservation details display
+                        displayReservationDetails();
+                        // Clear fields after cancellation
+                        prNumberField.setText("");
+                    } else {
+                        JOptionPane.showMessageDialog(cancellationFrame, "Cancellation aborted.");
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(cancellationFrame, "No reservation found for the given PR Number.");
+                }
+            }
+        });
+
+        cancellationFrame.add(new JLabel("PR Number:"));
+        cancellationFrame.add(prNumberField);
+        cancellationFrame.add(cancelButton);
+
+        // Making the cancellation frame visible
+        cancellationFrame.setLocationRelativeTo(null);
+        cancellationFrame.setVisible(true);
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new ReservationSystemGUI();
+            }
+        });
+    }
+}
+
+class ReservationDetails {
+    private final String trainNumber;
+    private final String trainName;
+    private final String classType;
+    private final String dateOfJourney;
+    private final String destination;
+
+    public ReservationDetails(String trainNumber, String trainName, String classType, String dateOfJourney, String destination) {
+        this.trainNumber = trainNumber;
+        this.trainName = trainName;
+        this.classType = classType;
+        this.dateOfJourney = dateOfJourney;
+        this.destination = destination;
+    }
+
+    @Override
+    public String toString() {
+        return "Train Number: " + trainNumber +
+                "\nTrain Name: " + trainName +
+                "\nClass Type: " + classType +
+                "\nDate of Journey: " + dateOfJourney +
+                "\nDestination: " + destination;
+    }
+}
