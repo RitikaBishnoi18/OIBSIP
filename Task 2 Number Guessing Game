@@ -1,0 +1,100 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Random;
+
+public class GuessTheNumber extends JFrame {
+    private int generatedNumber;
+    private int maxAttempts = 5;
+    private int attempts = 0;
+    private int score = 100;
+
+    private JTextField guessField;
+    private JButton guessButton;
+
+
+    public GuessTheNumber() {
+        setTitle("Guess the Number Game");
+        setSize(350, 120);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        initComponents();
+        generateNumber();
+
+        guessButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                checkGuess();
+            }
+        });
+    }
+
+    private void initComponents() {
+        guessField = new JTextField(10);
+        guessButton = new JButton("Guess");
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(3, 1));
+        panel.add(new JLabel("Enter your guess:"));
+        panel.add(guessField);
+        panel.add(guessButton);
+
+        add(panel, BorderLayout.NORTH);
+        
+    }
+
+    private void generateNumber() {
+        Random random = new Random();
+        generatedNumber = random.nextInt(100) + 1;
+    }
+
+    private void checkGuess() {
+        String guessText = guessField.getText();
+        try {
+            int userGuess = Integer.parseInt(guessText);
+
+            attempts++;
+
+            if (userGuess == generatedNumber) {
+                displayMessage("Congratulations! You guessed the number in " + attempts + " attempts.\nYour score: " + score);
+                resetGame();
+            } else if (userGuess < generatedNumber) {
+                displayMessage("Too low! Try again.");
+            } else {
+                displayMessage("Too high! Try again.");
+            }
+
+            score -= 20; // Deduct points for each attempt
+
+            if (attempts == maxAttempts) {
+                displayMessage("Sorry, you've reached the maximum number of attempts.\nThe correct number was: " + generatedNumber);
+                resetGame();
+            }
+        } catch (NumberFormatException ex) {
+            displayMessage("Please enter a valid number.");
+        }
+    }
+
+    private void displayMessage(String message) {
+        JOptionPane.showMessageDialog(this, message);
+        guessField.setText("");
+        guessField.requestFocus();
+    }
+
+    private void resetGame() {
+        generateNumber();
+        attempts = 0;
+        score = 100;
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new GuessTheNumber().setVisible(true);
+            }
+        });
+    }
+}
